@@ -1,0 +1,61 @@
+{
+  "model_version": "v20260823-022333",
+  "trained_at": "2026-08-23T02:23:33.152058+00:00",
+  "dataset_rows": 116221,
+  "fraud_rate": 0.00968,
+  "split": {
+    "train_rows": 92976,
+    "test_rows": 23245,
+    "strategy": "time-based 80/20"
+  },
+  "best_iteration": 318,
+  "pr_auc": 0.976,
+  "roc_auc": 0.9997,
+  "brier": 0.0012,
+  "review_threshold": {
+    "threshold": 0.098,
+    "precision": 0.7425,
+    "recall": 0.9665,
+    "f1": 0.8398,
+    "f2": 0.9554,
+    "confusion_matrix": {
+      "tp": 173,
+      "fp": 60,
+      "fn": 6,
+      "tn": 23006
+    }
+  },
+  "block_threshold": {
+    "threshold": 0.9983,
+    "precision": 1.0,
+    "recall": 0.7765,
+    "f1": 0.8742,
+    "f2": 0.7833,
+    "confusion_matrix": {
+      "tp": 139,
+      "fp": 0,
+      "fn": 40,
+      "tn": 23066
+    }
+  },
+  "cost_optimal_threshold": {
+    "threshold": 0.001,
+    "recall_at_threshold": 1.0,
+    "value_recall": 1.0,
+    "fp_friction_cost_inr": 150.0
+  },
+  "feature_importance_gain": {
+    "prior_fraud_count_customer": 2060340.62,
+    "amount": 856934.83,
+    "device_txn_count_7d": 219966.89,
+    "avs_match": 163738.07,
+    "payment_method": 116447.28,
+    "cust_amount_sum_24h": 54316.1,
+    "card_age_days": 34220.71,
+    "channel": 32894.57,
+    "hour_cos": 20707.92,
+    "hour_sin": 20148.26,
+    "log_amount": 8840.51,
+    "country_mismatch": 7982.03
+  }
+}

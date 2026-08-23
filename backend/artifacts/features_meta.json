@@ -1,0 +1,39 @@
+{
+  "feature_names": [
+    "amount",
+    "log_amount",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week",
+    "is_night",
+    "cvv_match",
+    "avs_match",
+    "card_age_days",
+    "country_mismatch",
+    "cust_txn_count_1h",
+    "cust_txn_count_24h",
+    "cust_amount_sum_24h",
+    "cust_max_amount_24h",
+    "cust_avg_amount_30d",
+    "device_txn_count_7d",
+    "merchant_txn_count_1h",
+    "prior_fraud_count_customer",
+    "amount_to_cust_avg_ratio",
+    "payment_method",
+    "channel"
+  ],
+  "categorical_mappings": {
+    "payment_method": {
+      "card": 0,
+      "netbanking": 1,
+      "upi": 2,
+      "wallet": 3
+    },
+    "channel": {
+      "android": 0,
+      "api": 1,
+      "ios": 2,
+      "web": 3
+    }
+  }
+}
