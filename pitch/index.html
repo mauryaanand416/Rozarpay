@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SentinelPay — Buildathon Pitch</title>
+<style>
+  :root{
+    --bg:#0b1120; --panel:#111a2e; --edge:#1e293b;
+    --sky:#38bdf8; --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --violet:#c084fc; --txt:#e2e8f0; --mut:#94a3b8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--txt);font-family:"Segoe UI",system-ui,sans-serif;overflow:hidden}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;padding:6vh 8vw}
+  .slide.active{display:flex}
+  .kicker{color:var(--sky);letter-spacing:.25em;font-size:1vw;text-transform:uppercase;margin-bottom:1.2vh}
+  h1{font-size:4.6vw;line-height:1.05}
+  h2{font-size:3vw;margin-bottom:3vh}
+  .sub{color:var(--mut);font-size:1.35vw;margin-top:2vh;line-height:1.5}
+  .grid{display:grid;gap:1.4vw}
+  .card{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:2vh 1.5vw}
+  .card h3{font-size:1.25vw;margin-bottom:.8vh;color:var(--sky)}
+  .card p{font-size:1vw;color:var(--mut);line-height:1.55}
+  .big{font-size:3.4vw;font-weight:700}
+  .row{display:flex;gap:2vw;align-items:center}
+  .tag{display:inline-block;border-radius:999px;padding:.35em 1em;font-size:.95vw;border:1px solid var(--edge);margin:.25em;background:#0d1526}
+  .bar{height:.7vw;border-radius:99px;background:#0d1526;overflow:hidden;margin:.5vh 0}
+  .bar>div{height:100%;border-radius:99px}
+  table{width:100%;border-collapse:collapse;font-size:1.15vw}
+  th,td{text-align:left;padding:1.1vh .9vw;border-bottom:1px solid var(--edge)}
+  th{color:var(--mut);text-transform:uppercase;font-size:.85vw;letter-spacing:.08em}
+  .g{color:var(--green)} .a{color:var(--amber)} .r{color:var(--rose)} .v{color:var(--violet)} .s{color:var(--sky)}
+  pre{font-family:Consolas,monospace;font-size:1.02vw;line-height:1.5;color:var(--mut)}
+  .foot{position:absolute;bottom:3vh;left:8vw;right:8vw;display:flex;justify-content:space-between;font-size:.9vw;color:#475569}
+  #ui{position:absolute;top:2.2vh;right:2vw;display:flex;gap:.6vw;z-index:10}
+  #ui button{background:var(--panel);color:var(--txt);border:1px solid var(--edge);border-radius:8px;padding:.6vh 1vw;font-size:.95vw;cursor:pointer}
+  #ui button:hover{border-color:var(--sky)}
+  #prog{position:absolute;top:0;left:0;height:.5vh;background:var(--sky);width:0%;transition:width .4s;z-index:10}
+  #timer{position:absolute;top:2.2vh;left:2vw;font-size:.95vw;color:#475569;z-index:10;font-variant-numeric:tabular-nums}
+  .fadein{animation:f .8s ease both}@keyframes f{from{opacity:0;transform:translateY(14px)}to{opacity:1}}
+  ul{list-style:none} li{font-size:1.25vw;color:var(--mut);margin:1.4vh 0;padding-left:1.6em;position:relative;line-height:1.5}
+  li:before{content:"▸";position:absolute;left:0;color:var(--sky)}
+</style>
+</head>
+<body>
+<div id="prog"></div><div id="timer">00:00 / 04:40</div>
+<div id="ui">
+  <button onclick="start()">▶ Start pitch</button>
+  <button onclick="prev()">◀</button><button onclick="next()">▶│</button>
+  <button id="pb" onclick="togglePause()">⏸ Pause (P)</button>
+</div>
+
+<!-- 1 TITLE -->
+<section class="slide" data-t="20">
+  <div class="kicker">Razorpay AI Buildathon · Track 02 · AI Risk Manager</div>
+  <h1>Sentinel<span class="s">Pay</span></h1>
+  <h1 style="font-size:2.6vw;margin-top:1vh">Stop the merchant losing money to fraud.</h1>
+  <p class="sub">A working fraud <b style="color:var(--txt)">detector · verifier · auto-responder</b> — real-time scoring,
+  explainable decisions, bounded actions, and a tamper-evident audit trail.<br><br>
+  <span class="tag">FastAPI</span><span class="tag">LightGBM</span><span class="tag">SHAP</span><span class="tag">Azure OpenAI</span><span class="tag">Next.js</span><span class="tag">Docker · Azure</span></p>
+</section>
+
+<!-- 2 PROBLEM -->
+<section class="slide" data-t="24">
+  <div class="kicker">The problem</div>
+  <h2>Fraud eats margin three ways</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card"><h3>Missed fraud</h3><p>Card testing, account takeover and new-card abuse drain balances before anyone notices. Every missed rupee is gone.</p></div>
+    <div class="card"><h3>False positives</h3><p>Blocking a legitimate ₹50,000 order destroys trust and revenue. Naive models over-block.</p></div>
+    <div class="card"><h3>Unexplainable reviews</h3><p>Analysts get a score with no reasons. Reviews take longer, decisions can't be defended to customers or regulators.</p></div>
+  </div>
+  <p class="sub">AI-enabled fraud is accelerating across Indian BFSI while returns and chargebacks quietly eat margin.</p>
+</section>
+
+<!-- 3 WHAT WE BUILT -->
+<section class="slide" data-t="26">
+  <div class="kicker">What we built</div>
+  <h2>One engine, the full risk loop</h2>
+  <ul>
+    <li><b style="color:var(--txt)">Real-time scoring</b> — 21 behavioral features, LightGBM detector, ~30–45 ms end-to-end</li>
+    <li><b style="color:var(--txt)">Velocity rules layer</b> — card-testing bursts, account-drain, device farms; rules escalate, never de-escalate</li>
+    <li><b style="color:var(--txt)">Gated actions</b> — ALLOW → REVIEW → BLOCK, and above ₹40k the system must escalate to a human</li>
+    <li><b style="color:var(--txt)">Explainable by default</b> — SHAP attributions on every decision + LLM narrative with template fallback</li>
+    <li><b style="color:var(--txt)">Tamper-evident audit ledger</b> — SHA-256 hash chain; analyst actions are inside the perimeter too</li>
+    <li><b style="color:var(--txt)">Feedback loop</b> — review verdicts become labels; one click retrains and hot-swaps the model</li>
+  </ul>
+</section>
+
+<!-- 4 ARCHITECTURE -->
+<section class="slide" data-t="26">
+  <div class="kicker">Architecture</div>
+  <h2 style="margin-bottom:2vh">How a transaction flows</h2>
+<pre>
+ POST /transactions ──▶ <span class="s">normalize ▶ history(7 days) ▶ feature engine (21 features)</span>
+                                   │
+                 ┌─────────────────┴─────────────────┐
+                 ▼                                   ▼
+        <span class="s">LightGBM risk score</span>              <span class="a">velocity rules (floors)</span>
+                 └────────────► action = MAX(tier, rules) ◄──────────┘
+                                        │
+                        amount ≥ ₹40,000 ? ──yes──▶ <span class="v">ESCALATE to human</span>
+                                        │no
+             ALLOW ◀── score low ──▶ REVIEW ──▶ BLOCK
+                │                    │            │
+                ▼                    ▼            ▼
+         green feed          human queue      audit entry (hash-chained) + webhook
+                                     │
+                          SHAP top-3 + LLM explanation attached
+</pre>
+</section>
+
+<!-- 5 DETECTION -->
+<section class="slide" data-t="22">
+  <div class="kicker">Under the hood</div>
+  <h2>Detection: boring tech, honest math</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="card"><h3>Features that matter</h3><p>Velocity windows (1h / 24h / 30-day), spend-vs-normal ratio, IP↔billing country mismatch, night-time flag, CVV/AVS results, card age, device activity, prior confirmed fraud on the account.</p></div>
+    <div class="card"><h3>Why LightGBM?</h3><p>Gradient-boosted trees remain state-of-the-art for tabular payments data. Trains in minutes, scores in microseconds, and gives exact SHAP values — defensible engineering, not fashion.</p></div>
+    <div class="card"><h3>Rules beside the model</h3><p>CARD_TESTING_BURST, NEW_CARD_HIGH_VALUE, GEO_MISMATCH_HIGH_VALUE, ACCOUNT_DRAIN_PATTERN… deterministic guarantees regulators expect.</p></div>
+    <div class="card"><h3>Time-based split</h3><p>Train on the past, test on the future. Random splits leak the future into training and inflate metrics. Ours mirrors production reality.</p></div>
+  </div>
+</section>
+
+<!-- 6 RESULTS -->
+<section class="slide" data-t="24">
+  <div class="kicker">Measured results — held-out time-based test set</div>
+  <h2>The numbers</h2>
+  <table>
+    <tr><th>Metric</th><th>Value</th><th>Meaning</th></tr>
+    <tr><td>Dataset</td><td class="s">116,221 txns · 0.97% fraud</td><td>with stealth fraud + hard negatives seeded in</td></tr>
+    <tr><td>PR-AUC</td><td class="big g">0.976</td><td>ROC-AUC 0.9997</td></tr>
+    <tr><td>Review tier @ t=0.098</td><td class="a">precision 74.3% · recall 96.7%</td><td>F2 = 0.955 — what humans see</td></tr>
+    <tr><td>Auto-block tier @ t=0.998</td><td class="r">precision 100% · recall 77.7%</td><td>blocks only when near-certain</td></tr>
+    <tr><td>Decision latency</td><td class="s">~30–45 ms</td><td>incl. features + SHAP</td></tr>
+  </table>
+</section>
+
+<!-- 7 THRESHOLDS -->
+<section class="slide" data-t="22">
+  <div class="kicker">No hand-picked thresholds</div>
+  <h2>Operating points are learned from data</h2>
+  <ul>
+    <li>t_review maximizes F2 subject to recall ≥ 80% — missing fraud costs more than extra review</li>
+    <li>t_block demands maximum precision subject to recall ≥ 50% — auto-blocking must be near-certain</li>
+    <li>A rupee cost model sweeps thresholds to minimize <b style="color:var(--txt)">missed-fraud value + ₹150 friction × false positives</b></li>
+  </ul>
+  <div class="row" style="margin-top:3vh">
+    <div class="card" style="flex:1"><h3>Precision @ review</h3><div class="bar"><div style="width:74.3%;background:var(--amber)"></div></div><p>74.3%</p></div>
+    <div class="card" style="flex:1"><h3>Recall @ review</h3><div class="bar"><div style="width:96.7%;background:var(--green)"></div></div><p>96.7%</p></div>
+    <div class="card" style="flex:1"><h3>Precision @ block</h3><div class="bar"><div style="width:100%;background:var(--rose)"></div></div><p>100%</p></div>
+  </div>
+</section>
+
+<!-- 8 EXPLAINABILITY -->
+<section class="slide" data-t="22">
+  <div class="kicker">Explainability</div>
+  <h2>Every decision carries its reasons</h2>
+  <div class="card" style="margin-top:1vh">
+<pre style="color:var(--txt)">
+ SIM-B1594DC95E · ₹67,027 · netbanking · <span class="a">REVIEW</span>   score 0.02
+   rule  GEO_MISMATCH_HIGH_VALUE  foreign IP, high-value order
+   rule  NIGHT_LARGE_AMOUNT       large amount between 00:00–05:00
+   model top drivers: country_mismatch (+0.31), hour_sin (+0.22)
+   llm   “Held for manual review: foreign-IP high-value order at night
+          matches account-takeover patterns seen this month.”
+</pre>
+  </div>
+  <p class="sub">SHAP is stored synchronously — always available. The LLM narrative is async: if Azure OpenAI is down or no key is set, a deterministic template takes over. Zero dependency, zero silence.</p>
+</section>
+
+<!-- 9 GATED -->
+<section class="slide" data-t="20">
+  <div class="kicker">Bounded autonomy</div>
+  <h2>The agent cannot move money. Ever.</h2>
+  <ul>
+    <li>Actions are recommendations: allow, hold for review, block, escalate — nothing else</li>
+    <li><b style="color:var(--txt)">Hard gate:</b> above ₹40,000 auto-block is suppressed — a human decides</li>
+    <li>Analyst resolutions are audited under their identity and feed retraining</li>
+    <li>Rate limiting, webhook alerts, safe-mode if the model fails to load</li>
+  </ul>
+</section>
+
+<!-- 10 AUDIT -->
+<section class="slide" data-t="22">
+  <div class="kicker">Audit trail</div>
+  <h2>Tamper-evident by construction</h2>
+<pre>
+ seq 41  actor=risk-engine   action=decision:block   hash=a3f9…
+ prev ◀─────────────────────────────────────────────────┘
+ seq 42  actor=analyst:priya action=review:resolved hash=77be…
+ prev ◀─────────────────────────────────────────────────┘
+
+ GET /audit/verify → {"valid": true, "entries": 42}
+ edit any row  →  {"valid": false, "broken_at_seq": 42}
+</pre>
+  <p class="sub">Each entry hashes its content plus the previous hash (SHA-256). Silent history edits are detectable — a risk product whose own log could be edited would be indefensible.</p>
+</section>
+
+<!-- 11 FAILURES -->
+<section class="slide" data-t="24">
+  <div class="kicker">Failure handling — demonstrated live</div>
+  <h2>Four ways it refuses to fail badly</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="card"><h3>Model won't load</h3><p><b class="a">Safe mode:</b> everything routes to human review. Never fails open.</p></div>
+    <div class="card"><h3>LLM provider down</h3><p><b class="a">Circuit breaker</b> opens after 3 failures; template explanations take over instantly.</p></div>
+    <div class="card"><h3>High-value false positive</h3><p><b class="v">Human gate</b> — escalated instead of silently blocked. A person releases it.</p></div>
+    <div class="card"><h3>Ledger tampering</h3><p><b class="r">Chain verification</b> pinpoints the first broken sequence number.</p></div>
+  </div>
+</section>
+
+<!-- 12 CLOSE -->
+<section class="slide" data-t="30">
+  <div class="kicker">Live demo · github.com/mauryaanand416/Rozarpay</div>
+  <h2>Built like production, not a prototype</h2>
+  <ul>
+    <li>19 passing tests · CI on every push · Docker Compose one-command run</li>
+    <li>Merchant console: live feed, review queue, audit explorer, metrics page, LLM digest</li>
+    <li>Deploys to Azure Container Apps + PostgreSQL + Key Vault (configs included)</li>
+    <li>Public dataset swap-in ready; Razorpay test-mode APIs drop straight into the simulator</li>
+  </ul>
+  <h2 style="margin-top:4vh;font-size:2.2vw">Complexity went into <span class="s">trust</span>: measured metrics, bounded autonomy,<br>explanations that survive an audit, and a loop that learns from every analyst decision.</h2>
+  <p class="sub">SentinelPay · Track 02 · thank you — questions welcome.</p>
+</section>
+
+<div class="foot"><span>SentinelPay · AI Risk Manager</span><span id="slideno">1 / 12</span></div>
+
+<script>
+const slides=[...document.querySelectorAll(".slide")];
+let i=0,t=null,paused=false,startTs=null,elapsed=0,total=slides.reduce((a,s)=>a+ +s.dataset.t,0);
+function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0")}
+function show(n){
+  slides[i].classList.remove("active");i=(n+slides.length)%slides.length;
+  const s=slides[i];s.classList.add("active");
+  s.querySelectorAll(".fadein,.card,.sub,pre,ul,table").forEach((el,k)=>{el.style.animation="none";void el.offsetWidth;el.classList.add("fadein");el.style.animationDelay=(k*0.06)+"s"});
+  document.getElementById("slideno").textContent=(i+1)+" / "+slides.length;
+  document.getElementById("prog").style.width=((slides.slice(0,i).reduce((a,x)=>a+ +x.dataset.t,0)/total)*100)+"%";
+}
+function schedule(){clearTimeout(t);if(!paused)t=setTimeout(()=>next(),slides[i].dataset.t*1000)}
+function next(){show(i+1);schedule()}
+function prev(){show(i-1);schedule()}
+function start(){
+  paused=false;document.getElementById("pb").textContent="⏸ Pause (P)";
+  if(startTs===null){startTs=Date.now();setInterval(()=>{if(startTs&&!paused){elapsed+= .5;}document.getElementById("timer").textContent=fmt(elapsed)+" / "+fmt(total)},500);
+  show(0);speak(i);}
+}
+function togglePause(){paused=!paused;document.getElementById("pb").textContent=paused?"▶ Resume (P)":"⏸ Pause (P)";schedule()}
+function speak(n){
+  if(!("speechSynthesis"in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(slides[n].innerText.replace(/\s+/g," ").slice(0,900));
+  u.rate=1.04;speechSynthesis.speak(u);
+}
+const _next=next,_prev=prev;
+next=function(){_next();speak(i)};
+prev=function(){_prev();speak(i)};
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key===" ")next();
+  if(e.key==="ArrowLeft")prev();
+  if(e.key.toLowerCase()==="p")togglePause();
+});
+show(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,760 @@
+####################################################################################
+#                                                                                  #
+#        SENTINELPAY — MASTER PITCH VIDEO SCRIPT (FULLY DETAILED EDITION)          #
+#              Razorpay AI Buildathon — Track 02 — AI Risk Manager                 #
+#                                                                                  #
+#   How to read this file:                                                         #
+#     [SAY]     = word-for-word narration (read out loud)                          #
+#     [DO]      = exact mouse/keyboard actions                                     #
+#     [SCREEN]  = what the viewer must see at that moment                          #
+#     [OVERLAY] = text to add during video editing                                 #
+#     BEATS     = timing inside each scene                                         #
+#                                                                                  #
+#   MAIN VIDEO : ~5 min 20 s   |   EXTENDED deep-dives push it to 10-12 min         #
+####################################################################################
+
+
+====================================================================================
+PART 0 — PRE-PRODUCTION (do this BEFORE hitting record)
+====================================================================================
+
+0.1  ENVIRONMENT SETUP (run in this order)
+
+  # Fresh demo state
+  del backend\data\sentipay.db
+
+  # Terminal 1 — API
+  cd backend
+  ..\.venv\Scripts\activate
+  python -m uvicorn app.main:app --port 8000
+
+  # Verify boot (browser): http://localhost:8000/healthz
+  # EXPECT: {"status":"ok","safe_mode":false,"model":{"available":true,...}}
+
+  # If artifacts missing or metrics stale:
+  python -m scripts.generate_data       # ~40 s
+  python -m app.ml.train                # ~3-4 min, then restart API
+
+  # Terminal 2 — dashboard
+  cd dashboard
+  npm run dev                           # http://localhost:3000
+
+  # Warm up traffic ~90 s BEFORE recording:
+  curl -X POST http://localhost:8000/api/v1/admin/simulator/start `
+       -H "X-API-Key: change-me-demo-key"
+
+  PRE-RECORD SANITY CHECKLIST (browser refresh):
+  [ ] At least ONE red BLOCK card visible on live feed
+  [ ] Review Queue has 3+ pending items
+  [ ] Audit page badge GREEN ("chain valid")
+  [ ] Metrics page shows PR-AUC 0.976 (not "not_trained")
+  [ ] /docs loads without errors
+
+0.2  SCREEN & AUDIO HYGIENE
+
+  [ ] Browser zoom 110%, dark theme everywhere
+  [ ] Bookmarks bar hidden (Ctrl+Shift+B)
+  [ ] Notifications OFF (Win+A -> Do Not Disturb)
+  [ ] Close email/whatsapp/slack tabs
+  [ ] Mic test: record 10 s, listen back
+  [ ] Recorder: Win+Alt+R (Game Bar) records window+audio; OBS if face-cam wanted
+
+0.3  DELIVERY COACHING
+
+  - Speak 10% slower than feels natural.
+  - Numbers get their own pause: "PR-AUC ... zero point nine seven six."
+  - If you fumble: STOP, silent 2 s, repeat the line cleanly. Cut later.
+  - Energy curve: HIGH hook (Sc.1) -> CALM tech (Sc.3-5) -> RISE live demo
+    (Sc.6) -> WARM close (Sc.8).
+
+
+====================================================================================
+PART 1 — MAIN SCRIPT, SCENE BY SCENE
+====================================================================================
+
+------------------------------------------------------------------------------------
+SCENE 1 — HOOK + INTRO                                        TOTAL 0:00 - 0:28
+------------------------------------------------------------------------------------
+
+BEAT 1.1 (0:00-0:12) — cold open, no intro yet
+
+[DO]   Open http://localhost:8000/docs. Click POST /api/v1/transactions ->
+       "Try it out". Paste body prepared beforehand:
+
+         {
+           "amount": 150,
+           "customer_id": "CUST04213",
+           "merchant_id": "MERC0007",
+           "payment_method": "card",
+           "device_id": "DEV-NEW-99127",
+           "ip_country": "US",
+           "billing_country": "IN",
+           "cvv_match": false,
+           "avs_match": false,
+           "card_age_days": 300,
+           "channel": "web"
+         }
+
+       Execute. Response panel shows the decision JSON.
+
+[SCREEN] Zoom onto: "action": "BLOCK"   and   "risk_score": 0.9x
+
+[OVERLAY] big text right side: "Rs 150 -> BLOCKED"
+
+[SAY]
+  "This payment looks harmless. One hundred fifty rupees. A normal card.
+   But my system blocked it in under fifty milliseconds.
+
+   Why? Because in the last ten minutes, this same customer made six MORE
+   micro-payments just like it — forty rupees, ninety rupees, one-twenty...
+
+   That pattern has a name: card testing. Criminals validate stolen cards
+   with small charges before draining them."
+
+BEAT 1.2 (0:12-0:28) — intro
+
+[DO]   Cut to title card or GitHub repo home page.
+
+[OVERLAY] SENTINELPAY — AI Risk Manager | Razorpay AI Buildathon — Track 02
+
+[SAY]
+  "Hello, I am [YOUR NAME], and this is SentinelPay — my entry for Track 02,
+   AI Risk Manager, of the Razorpay AI Buildathon.
+
+   The track asks for a working detector for one class of loss, with measured
+   precision and recall, where every money action is explainable, bounded,
+   and gated.
+
+   SentinelPay does all of that — and I will prove every claim in the next
+   four minutes."
+
+------------------------------------------------------------------------------------
+SCENE 2 — THE PROBLEM                                          TOTAL 0:28 - 1:02
+------------------------------------------------------------------------------------
+
+BEAT 2.1 (0:28-0:50)
+
+[DO]   Fullscreen slide/notepad with three lines appearing as you speak:
+
+         1. MISSED FRAUD      -> money gone forever
+         2. FALSE BLOCKS      -> lost sales, angry customers
+         3. BLACK-BOX SCORES  -> slow reviews, undefended decisions
+
+[SAY]
+  "Merchants lose money to fraud in three distinct ways.
+
+   One — missed fraud. Account takeover, stolen cards, testing rings.
+   By the time a human notices the pattern, the balance is already drained.
+
+   Two — false blocks. Block a real customer's fifty-thousand-rupee order by
+   mistake and you lose that sale today — and probably the customer forever.
+   Over-blocking quietly kills revenue.
+
+   Three — black-box decisions. Most tools hand the analyst a bare score.
+   No reasons. Reviews become slow and impossible to defend when a customer
+   asks why they were declined."
+
+BEAT 2.2 (0:50-1:02)
+
+[SAY]
+  "Razorpay's own brief defines the bar: stop the merchant losing money to
+   fraud, with measured precision and recall, where every money action is
+   explainable, bounded and gated.
+
+   Remember those three words — explainable, bounded, gated — because
+   everything you are about to see maps directly to them."
+
+------------------------------------------------------------------------------------
+SCENE 3 — WHAT SENTINELPAY IS                                  TOTAL 1:02 - 1:52
+------------------------------------------------------------------------------------
+
+BEAT 3.1 (1:02-1:25) — pipeline overview
+
+[DO]   Show README.md feature matrix on GitHub, scroll slowly.
+
+[SAY]
+  "SentinelPay is a complete, working fraud-risk engine. Here is the journey
+   of one transaction.
+
+   It enters through an API-key-protected FastAPI endpoint. The feature engine
+   loads that customer's last seven days of history and computes twenty-one
+   behavioral features — transaction counts per hour, spend versus normal,
+   IP-versus-billing country mismatch, card age, device activity, night-time
+   flag, prior confirmed fraud on the account, and more.
+
+   A LightGBM model scores it — gradient-boosted trees, the industry standard
+   for tabular payments data.
+
+   In parallel, seven deterministic velocity rules run — card-testing burst
+   detection, new-card high-value, device-farm signals and others.
+
+   Rules can make the outcome stricter — never softer. Whichever brain is
+   more cautious wins."
+
+BEAT 3.2 (1:25-1:52) — four actions + extras
+
+[OVERLAY] ALLOW -> REVIEW -> BLOCK -> ESCALATE  (four colored chips)
+
+[SAY]
+  "The engine emits one of four actions.
+
+   ALLOW — pass. REVIEW — hold for a human analyst.
+   BLOCK — stop automatically, only when near-certain.
+   And ESCALATE — the bounded part: above forty thousand rupees the machine
+   is forbidden from auto-blocking. Even at ninety-nine percent fraud score,
+   a human makes that call.
+
+   Every decision carries SHAP feature attributions — the mathematical WHY —
+   plus a plain-language explanation written by Azure OpenAI, and lands in a
+   SHA-256 hash-chained audit ledger that detects tampering.
+
+   And the loop closes: analyst verdicts become labels, labels feed
+   retraining, retraining hot-swaps the live model with zero downtime."
+
+------------------------------------------------------------------------------------
+SCENE 4 — ARCHITECTURE WALKTHROUGH                             TOTAL 1:52 - 2:38
+------------------------------------------------------------------------------------
+
+[DO]   Show ARCHITECTURE.md diagram. Move cursor box-by-box in sync with speech.
+
+[SAY]
+  "Left to right, the whole system.
+
+   A transaction arrives — normalized, validated, persisted.
+
+   The history loader pulls seven days of related activity: same customer,
+   same device, same merchant.
+
+   The feature engine computes its twenty-one features — identical logic at
+   training time and online, and there is literally a TEST asserting both
+   paths agree. That parity is where most ML projects silently break;
+   ours cannot.
+
+   Now two independent judges: the LightGBM score, and the rules layer.
+   Card-testing bursts force a BLOCK floor. Geo-mismatched high-value forces
+   a REVIEW floor. Device farms force review. The final action equals the
+   MAXIMUM of model tier and all rule floors.
+
+   Then the autonomy gate: amount above forty thousand — auto-block suppressed,
+   escalated to a human instead.
+
+   Finally, side-effects fan out: decision persisted with reasons, an audit
+   entry joins the hash chain, Server-Sent Events stream it to the merchant
+   console instantly, blocked events fire webhook alerts, and a background
+   worker attaches SHAP top-three plus the LLM narrative."
+
+------------------------------------------------------------------------------------
+SCENE 5 — MEASURED RESULTS                                     TOTAL 2:38 - 3:22
+------------------------------------------------------------------------------------
+
+BEAT 5.1 (2:38-2:58) — honest data story
+
+[SHOW] docs/EVALUATION.md scrolling, or artifacts/metrics.json beside.
+
+[SAY]
+  "Now the part most demos skip: honest measurement.
+
+   Dataset: one hundred sixteen thousand transactions, about one percent fraud
+   — realistic Indian-payment shapes: UPI micro-payments, netbanking, cards,
+   business-hours weighting.
+
+   And I made it deliberately HARD. Thirty percent of the fraud is stealth —
+   attackers using the victim's OWN device and home country. Plus hard
+   negatives: legitimate travelers abroad, legitimate new-card big purchases,
+   night-owl large orders. Patterns that LOOK exactly like fraud but aren't.
+
+   Why show this? Because a perfect score on easy data tells you nothing.
+   Zero point nine seven six PR-AUC on adversarial data means something."
+
+BEAT 5.2 (2:58-3:22) — numbers, spoken slowly
+
+[DO]   Open backend/artifacts/metrics.json. Highlight values as spoken.
+
+[SAY]
+  "Split strategy: TIME-BASED eighty-twenty. Train on the past, test on the
+   future — never random shuffling, which leaks tomorrow into training.
+
+   PR-AUC ... zero point nine seven six. ROC-AUC zero point nine nine nine
+   seven.
+
+   At the review threshold: precision seventy-four point three percent,
+   recall ninety-six point seven percent. Plain words — we catch almost every
+   fraud; humans see some extra false alarms; nothing slips past silently.
+
+   At the auto-block threshold: precision ONE HUNDRED PERCENT on held-out
+   data. We only auto-block when essentially certain.
+
+   And these thresholds were LEARNED, not hand-tuned — swept against a rupee
+   cost function: missed-fraud value plus one hundred fifty rupees friction
+   per false positive."
+
+
+------------------------------------------------------------------------------------
+SCENE 6 — LIVE DEMO                                            TOTAL 3:22 - 4:42
+          (heart of the video — rehearse this scene three times minimum)
+------------------------------------------------------------------------------------
+
+BEAT 6.1 (3:22-3:40) — live feed
+
+[DO]   Switch to dashboard tab (already running and populated).
+
+[SAY, while scrolling slowly]
+  "Let me show you it working live. This is the merchant console receiving
+   decisions in real time over server-sent events.
+
+   Green cards — allowed. Watch... here. Red card.
+
+   Look at the amounts on it: forty-two... ninety-five... one-fifty...
+   then twenty-eight thousand. Micro-charges, then the kill shot.
+   CARD_TESTING_BURST rule fired, model score spiked past the block
+   threshold, engine blocked it automatically."
+
+BEAT 6.2 (3:40-3:58) — the WHY, three layers
+
+[DO]   Click the blocked card / GET its decision in the API docs tab.
+       Show reasons array + explanation field. Zoom on explanation text.
+
+[OVERLAY] three labels appearing as you speak: RULE | SHAP | LLM
+
+[SAY]
+  "And here is the WHY — three layers of it.
+
+   Layer one, the deterministic rule that fired, with a human-readable
+   description.
+
+   Layer two, the top SHAP drivers — country mismatch pushed the score up,
+   hour-of-day pushed it.
+
+   Layer three, an LLM narrative summarizing everything in plain English.
+
+   And if the LLM provider is down? A template generator writes the same
+   explanation deterministically. The why NEVER goes missing."
+
+BEAT 6.3 (3:58-4:18) — review queue resolution
+
+[DO]   Open Review Queue. Pick top item. Type note "confirmed card testing".
+       Click CONFIRM FRAUD. Wait for AI follow-up chip to appear.
+
+[SAY]
+  "Medium-risk transactions wait in the human review queue, sorted by risk
+   score.
+
+   Watch closely — I resolve this one as confirmed fraud, leave a note...
+   done.
+
+   Three things happened silently: the customer's label updated in the
+   database; an audit entry was written under MY analyst identity; and this
+   labeled example now feeds the next retraining run.
+
+   That is the learning loop — every human decision makes the model better."
+
+BEAT 6.4 (4:18-4:42) — audit ledger + tamper demo
+
+[DO]   Open Audit Ledger page. Cursor on green "chain valid" badge.
+       THEN switch to pre-prepared tampered DB tab showing:
+
+         {"valid": false, "broken_at_seq": 27}
+
+[SAY]
+  "Finally — the audit trail. Every decision AND every human action lives
+   here, hash-chained: each entry embeds the previous entry's SHA-256 hash.
+   Badge says chain valid.
+
+   Now watch me try to cheat. I edited one historical row directly in the
+   database... refresh... and verification fails — pinpointing the exact
+   broken entry. A risk system whose own logs could be silently edited would
+   be indefensible. Mine cannot be."
+
+------------------------------------------------------------------------------------
+SCENE 7 — FAILURE HANDLING                                     TOTAL 4:42 - 5:02
+------------------------------------------------------------------------------------
+
+[DO]   docs/FAILURE_MODES.md, scroll through four cards quickly.
+       Optional: show /healthz JSON with safe_mode true if you recorded
+       the safe-mode take beforehand.
+
+[SAY]
+  "The track specifically asks: show one failure handled gracefully.
+   I handle FOUR.
+
+   One — model fails to load: SAFE MODE routes everything to human review.
+   The system never fails open, never crashes.
+
+   Two — LLM provider down: after three failures a circuit breaker opens,
+   template explanations take over instantly. Zero user impact.
+
+   Three — high-value false positive: instead of silently blocking a big
+   legitimate order, the HUMAN GATE escalates it to a person.
+
+   Four — audit tampering: the hash chain breaks visibly, pinpointing the
+   exact sequence number.
+
+   Plus rate limiting protects the scoring API itself from abuse."
+
+------------------------------------------------------------------------------------
+SCENE 8 — CLOSING PITCH                                        TOTAL 5:02 - 5:25
+------------------------------------------------------------------------------------
+
+[DO]   GitHub repo page. Scroll commit history once slowly. End frame:
+       repo URL large on screen for 3 seconds.
+
+[OVERLAY] github.com/mauryaanand416/Rozarpay
+
+[SAY]
+  "Everything is public — code, nineteen passing tests, CI pipeline,
+   Docker Compose one-command setup, Azure deployment configs with Container
+   Apps, PostgreSQL and Key Vault.
+
+   I chose boring, proven technology — gradient boosting over deep learning
+   for tabular payments data — and spent my complexity budget where risk
+   systems actually need it:
+
+   measured metrics on honest splits.
+   Bounded autonomy.
+   Explanations that survive an audit.
+   And a feedback loop that learns from every analyst decision.
+
+   My code speaks louder than my resume. Thank you — happy to take questions."
+
+
+====================================================================================
+PART 2 — EDITING NOTES (while assembling the video)
+====================================================================================
+
+TEXT OVERLAYS TO ADD (lower-third or corner, 2-3 s each):
+  Scene 1 : "Card testing = testing stolen cards with micro-payments"
+  Scene 3 : "ALLOW -> REVIEW -> BLOCK -> ESCALATE"
+  Scene 4 : "Rules can escalate. Never de-escalate."
+  Scene 5 : "Time-based split: train on past, test on future"
+  Scene 5 : "PR-AUC 0.976"   (big, center)
+  Scene 6 : "Live — no cuts"  (start of scene)
+  Scene 7 : "Fail-safe, not fail-open"
+  Scene 8 : repo URL big at end
+
+B-ROLL IDEAS (cutaway while narrating):
+  - metrics.json scrolling      -> use during Scene 5 numbers
+  - tests passing terminal shot -> during Scene 8 "nineteen tests"
+  - docker compose up logs      -> during Scene 8 "one-command"
+
+TRANSITIONS: simple hard cuts. No fancy effects — fintech tone is calm.
+
+AUDIO: normalize voice loudness (-14 LUFS). Background music only under
+  Scene 1 and Scene 8 at very low volume, or none at all. Silence > noise.
+
+LENGTH CHECKS:
+  Main cut target        : 5:00 - 5:30
+  With deep-dives below  : 9:00 - 12:00 (optional extended version)
+
+
+
+====================================================================================
+PART 3 — DEEP-DIVE SCENES (optional extended video, +6 minutes)
+====================================================================================
+
+------------------------------------------------------------------------------------
+DEEP A — FULL CODE TOUR                                        ~2 min
+------------------------------------------------------------------------------------
+
+[DO]   VS Code, explorer open, walk file by file. Open each named file briefly,
+       scroll to the named function.
+
+[SAY]
+  "Quick code tour so you can see this is real engineering.
+
+   app/ml/features.py — the feature engine. Twenty-one features, and the SAME
+   build_online_features function runs during training and at serving time.
+   There is a dedicated parity TEST asserting both produce identical velocity
+   counts. Training-time speed comes from per-entity sorted arrays with
+   binary search — exact windows, no approximations.
+
+   app/ml/train.py — the training pipeline: time-based split, class weighting
+   for the one-percent fraud rate, early stopping on a time-ordered validation
+   slice, threshold selection by F2 and cost sweeps, and it writes
+   metrics.json, thresholds.json and drift baselines as artifacts.
+
+   app/engine/rules.py — the seven rules. Each returns a MINIMUM action;
+   max_action combines them with the model tier. Rules escalate, never
+   de-escalate.
+
+   app/services/pipeline.py — the orchestrator. One readable function:
+   normalize, persist, features, score, rules, gate, persist decision,
+   append audit entry, queue explanation, stream, webhook. The entire product
+   story in order.
+
+   app/audit/ledger.py — the hash chain in about sixty lines. Each entry
+   hashes its sequence, payload and previous hash with SHA-256; verify_chain
+   recomputes everything and pinpoints the first broken sequence.
+
+   tests/ — nineteen tests: feature parity online-vs-training, tamper
+   detection, gated escalation behavior, API-key auth, full review lifecycle."
+
+------------------------------------------------------------------------------------
+DEEP B — RETRAINING FEEDBACK LOOP                              ~1 min
+------------------------------------------------------------------------------------
+
+[DO]   Show POST /admin/model/retrain response {"job":"retrain-1","status":
+       "running"} then /admin/model/status showing done + fresh metrics.
+
+[SAY]
+  "Here is the feedback loop end to end.
+
+   Analysts resolve reviews; labels are stored on the transactions themselves.
+   One API call starts retraining in a background thread — guarded so two
+   retrains cannot collide. While it trains, the old model keeps serving.
+   When it finishes, artifacts are swapped and the registry hot-reloads:
+   the new model version appears instantly in every new decision.
+
+   Drift monitoring runs alongside: Population Stability Index compares live
+   feature distributions against training-time baselines, and alerts past
+   zero point two five — telling us WHEN retraining is needed, not just
+   letting it happen."
+
+------------------------------------------------------------------------------------
+DEEP C — DATA STRATEGY HONESTY                                 ~1 min
+------------------------------------------------------------------------------------
+
+[DO]   Show app/ml/synthetic.py briefly (the three attack generators).
+
+[SAY]
+  "Full transparency about data.
+
+   The dataset is synthetic because public labeled UPI-fraud data does not
+   exist. But I designed the generator adversarially: three fraud archetypes —
+   card testing bursts, account takeover sequences, new-card high-value abuse
+   — thirty percent of them stealth-mode using the victim's own device and
+   country. Plus hard negatives that mimic fraud signatures legitimately.
+
+   The loader accepts any CSV with matching columns — the IEEE-CIS Kaggle
+   fraud dataset drops straight in with zero code changes.
+
+   What transfers to production is the evaluation methodology: time-based
+   split, precision-recall focus, calibration check, cost-based thresholds.
+   That protocol is dataset-agnostic."
+
+------------------------------------------------------------------------------------
+DEEP D — AZURE DEPLOYMENT                                      ~1 min
+------------------------------------------------------------------------------------
+
+[DO]   Show infra/azure.yaml and docs/DEPLOY_AZURE.md side by side.
+
+[SAY]
+  "Deployment is config-first.
+
+   azure.yaml targets Azure Developer CLI: one azd up provisions Container
+   Apps for both services. The engine reads DATABASE_URL from the environment,
+   so SQLite in development becomes Azure PostgreSQL Flexible Server in the
+   cloud with zero code changes.
+
+   Secrets — API keys, OpenAI credentials, connection strings — belong in
+   Key Vault, not environment files. LLM calls route through Azure OpenAI
+   for enterprise-grade keys and regional compliance.
+
+   Application Insights traces every decision's latency, giving us the ops
+   dashboard out of the box."
+
+------------------------------------------------------------------------------------
+DEEP E — WHAT I WOULD BUILD NEXT                               ~40 s
+------------------------------------------------------------------------------------
+
+[SAY]
+  "If I earn the internship, the roadmap writes itself.
+
+   Wire Razorpay test-mode APIs into the simulator for real payload shapes.
+   Add a graph layer connecting devices, cards and customers across merchants.
+   Streaming scoring with Kafka instead of request-response pulls.
+   And champion-challenger rollout — new models shadow the incumbent before
+   promotion, judged on rupees saved, not just AUC."
+
+
+====================================================================================
+PART 4 — SIMPLE-WORDS GLOSSARY (use these phrasings on camera)
+====================================================================================
+
+PRECISION
+  "Of everything we flagged, how much was REALLY bad."
+  High precision = we rarely bother innocent customers.
+
+RECALL
+  "Of all the fraud out there, how much did we CATCH."
+  High recall = thieves rarely slip through.
+
+THE TRADE-OFF
+  "Catching more fraud always means flagging more innocent people.
+  The art is choosing WHERE on that line to operate — per action tier."
+
+PR-AUC
+  "One number for how well the model separates bad from good across ALL
+  thresholds. One point zero is perfect ranking. Ours: zero point nine seven six."
+
+SHAP VALUES
+  "For every decision it tells you HOW MUCH each factor pushed the score up
+  or down. Think itemized bill for a decision."
+
+LIGHTGBM
+  "An industry-standard ML model for table-shaped data — fast, accurate,
+  explainable. This family powers risk systems at banks and fintechs."
+
+TIME-BASED SPLIT
+  "Train on January-to-August, test on September. Never shuffle time-series
+  randomly — that leaks future answers into training."
+
+HASH CHAIN
+  "Every log entry carries the fingerprint of the previous one. Change
+  anything anywhere, and every fingerprint after it breaks."
+
+CIRCUIT BREAKER
+  "If a service keeps failing, stop calling it for sixty seconds and use
+  backup behavior instead of hanging or erroring."
+
+PSI / DRIFT
+  "Compares today's data shape against training-time shape. Big difference =
+  world changed = time to retrain."
+
+HARD GATE
+  "A rule ABOVE the AI: for big amounts a human must decide. Bounded autonomy
+  — the machine recommends, never decides alone."
+
+SAFE MODE
+  "If the model cannot load, the system refuses to guess — everything goes
+  to humans. Fail-safe, never fail-open."
+
+SSE (SERVER-SENT EVENTS)
+  "A one-way live stream from server to browser. Simpler than WebSockets,
+  auto-reconnects, perfect for pushing decisions to a dashboard."
+
+
+====================================================================================
+PART 5 — EXPECTED PANEL QUESTIONS & STRONG ANSWERS (20)
+====================================================================================
+
+Q1  Why synthetic data? Isn't that cheating?
+A   Public labeled UPI-fraud datasets don't exist. I generated traffic
+    adversarially — stealth fraud, hard negatives — and documented limits
+    honestly in EVALUATION.md. The loader accepts any same-schema CSV;
+    IEEE-CIS Kaggle drops in unchanged. The contribution is methodology plus
+    a working system, and both transfer to real data.
+
+Q2  Why LightGBM and not deep learning?
+A   Tabular payments data is gradient-boosting territory: better accuracy
+    per compute, trains in minutes, scores in microseconds, exact SHAP.
+    Deep nets would add opacity and cost without accuracy gain here.
+
+Q3  Block-tier precision is 100% — real?
+A   On MY held-out set yes — but only over 78% of its subset, deliberately.
+    Broad coverage lives in the REVIEW tier at lower precision. Both
+    confusion matrices are published; nothing hidden.
+
+Q4  How do you avoid false-blocking legit customers?
+A   Three layers: near-certain block threshold, the Rs 40,000 human gate,
+    and a fast review queue. Blocking is the last resort, not first.
+
+Q5  How does it plug into real Razorpay infrastructure?
+A   Stateless behind an API. SQLite->PostgreSQL via env var, simulator can
+    consume Razorpay test-mode webhooks, deploy on Container Apps — configs
+    included. LLM already uses Azure OpenAI.
+
+Q6  What about 10k transactions per second?
+A   Scoring is microseconds; per-customer history moves to Redis in prod.
+    Rate limiting protects now; Container Apps scales horizontally. Hot path
+    (score) is separated from cold path (LLM explanation) precisely for load.
+
+Q7  Can someone prompt-inject the LLM to approve fraud?
+A   The LLM has NO authority — it writes explanations only. Decisions come
+    from model+rules+gate. Injecting the narrator cannot change outcomes.
+    Safety by architecture, not by prompt wording.
+
+Q8  What if fraudsters learn the rules?
+A   Rules are floors, not the ceiling. The ML layer adapts through the
+    retraining loop; PSI drift alerts say WHEN attacker behavior shifted;
+    every analyst verdict becomes fresh training signal.
+
+Q9  Only 19 tests?
+A   Covering the critical paths: feature parity, tamper detection, gated
+    escalation, auth, queue lifecycle. Production roadmap adds load tests
+    and shadow-mode evaluation.
+
+Q10 Why SSE not WebSockets?
+A   One-way push is exactly our case; SSE auto-reconnects over plain HTTP.
+    Dashboard commands use normal REST, so bidirectional sockets add
+    complexity without benefit today.
+
+Q11 Where does the Rs 150 friction cost come from?
+A   A configurable constant representing review/handling cost per false
+    positive. It makes thresholds business-aware rather than purely
+    statistical, and merchants can tune it to their economics.
+
+Q12 Is the hash chain legally meaningful?
+A   It provides tamper-EVIDENCE, not legal non-repudiation like digital
+    signatures with key management. For regulatory grade, sign entries with
+    KMS/HSM keys — an explicit next step in the docs.
+
+Q13 How do you know online features match training features?
+A   A dedicated pytest computes both paths over the same history and asserts
+    equality within tolerance. Parity drift breaks CI before it breaks prod.
+
+Q14 What if the analyst is wrong?
+A   Labels record who decided and when; disagreements surface later via
+    chargeback outcomes. The audit trail makes misbehavior attributable —
+    deterrence plus forensics.
+
+Q15 Cold start — brand-new customer, no history?
+A   Velocity features default to zero, ratio defaults neutral; static
+    features (geo mismatch, CVV/AVS, card age) still carry the signal.
+    New-card high-value rule covers exactly this gap deterministically.
+
+Q16 Multi-currency? International merchants?
+A   Schema has currency field; cost model assumes INR today. Extension is
+    mechanical: FX normalization in the feature layer and per-currency
+    friction constants.
+
+Q17 Why Python/FastAPI and not Java/Spring like bank backends?
+A   The ML ecosystem — pandas, LightGBM, SHAP — lives in Python. FastAPI
+    gives async performance comparable to JVM frameworks for this workload.
+    Polyglot boundary: hot scoring could move to a compiled sidecar later.
+
+Q18 Model bias against certain regions/customers?
+A   Features are behavioral, not demographic. Geo mismatch is contextual
+    (travel cohort exists as hard negatives). Fairness auditing on real
+    outcome data is listed in the roadmap — honest answer: needs real data.
+
+Q19 What happens if two analysts resolve the same review?
+A   Optimistic concurrency: first resolve wins; second gets HTTP 409.
+    Both attempts would be audited anyway.
+
+Q20 Biggest weakness of the project?
+A   Honest answer: synthetic-data dependence until validated on real
+    labeled outcomes, and single-node storage. Both have documented,
+    concrete migration paths — Postgres via env var, Kaggle dataset via
+    drop-in CSV.
+
+
+====================================================================================
+PART 6 — FINAL RECORDING CHECKLIST
+====================================================================================
+
+BEFORE:
+  [ ] del backend\data\sentipay.db            (fresh DB)
+  [ ] Train once if needed; restart API; healthz shows safe_mode:false
+  [ ] Dashboard running; simulator started 90 s early
+  [ ] 1+ BLOCK card visible; queue >=3 items; audit badge green
+  [ ] Notifications off; tabs cleaned; zoom 110%
+  [ ] Mic check recorded and reviewed
+  [ ] JSON body for Scene 1 pasted in notepad, ready
+  [ ] Tampered-audit tab pre-opened for Scene 6 beat 4
+
+DURING:
+  - Follow beats; pause silently on mistakes; repeat the line cleanly
+  - Numbers slow and clear; smile only Scenes 1 & 8
+  - Live demo: no cuts inside Scene 6 except between beats if needed
+
+AFTER:
+  [ ] Trim dead air; remove fumbles; target 5:00-5:30 main cut
+  [ ] Add overlays from Part 2 list
+  [ ] Normalize audio; final watch-through at 1x
+  [ ] Upload YouTube unlisted / Drive; test link incognito
+  [ ] Submit repo + video at razorpay.com/buildathon BEFORE Sept 5
+
+
+                        END OF SCRIPT — GO GET THAT INTERNSHIP!
+====================================================================================
+
