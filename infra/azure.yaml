@@ -1,0 +1,29 @@
+name: sentinelpay
+metadata:
+  template: sentinelpay@1.0.0
+
+services:
+  api:
+    project: ./backend
+    language: python
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+    env:
+      - name: SENTINELPAY_API_KEY
+        value: ${SENTINELPAY_API_KEY}
+      - name: DATABASE_URL
+        value: ${DATABASE_URL}
+
+  dashboard:
+    project: ./dashboard
+    language: js
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_API_KEY=${SENTINELPAY_API_KEY}
+
+variables:
+  SENTINELPAY_API_KEY: change-me-demo-key
