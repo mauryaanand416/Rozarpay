@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import StatCard from "@/components/StatCard";
 import TxnCard from "@/components/TxnCard";
-import { streamUrl } from "@/lib/api";
+import { api, streamUrl } from "@/lib/api";
 import type { DecisionEvent } from "@/lib/types";
 
 export default function LiveFeed() {
@@ -13,6 +13,17 @@ export default function LiveFeed() {
   const [counts, setCounts] = useState({ ALLOW: 0, REVIEW: 0, BLOCK: 0, ESCALATE: 0 });
   const [safeMode, setSafeMode] = useState(false);
   const idRef = useRef<Map<number, DecisionEvent>>(new Map());
+  const maxIdRef = useRef(0);
+
+  const applyDecision = useCallback((data: DecisionEvent) => {
+    if (typeof data.decision_id !== "number" || data.decision_id <= maxIdRef.current) return;
+    maxIdRef.current = data.decision_id;
+    setSafeMode(data.model_version === "unavailable");
+    const action = data.action as keyof typeof counts;
+    idRef.current.set(data.decision_id, data);
+    setDecisions(Array.from(idRef.current.values()).slice(-40).reverse());
+    setCounts((prev) => ({ ...prev, [action]: (prev[action] ?? 0) + 1 }));
+  }, []);
 
   useEffect(() => {
     let es: EventSource | null = null;
@@ -30,18 +41,30 @@ export default function LiveFeed() {
             }
             return;
           }
-          setSafeMode(data.model_version === "unavailable");
-          const action = data.action as keyof typeof counts;
-          idRef.current.set(data.decision_id, data);
-          setDecisions(Array.from(idRef.current.values()).slice(-40).reverse());
-          setCounts((prev) => ({ ...prev, [action]: (prev[action] ?? 0) + 1 }));
+          applyDecision(data);
         } catch {}
       };
     } catch {}
 
-    return () => es?.close();
+    // Polling fallback: keeps the feed alive even if SSE is blocked or buffered.
+    const poll = async () => {
+      try {
+        const res = await api<{ items: DecisionEvent[] }>("/transactions/recent?limit=25");
+        setConnected(true);
+        for (const item of res.items.slice().reverse()) {
+          applyDecision(item);
+        }
+      } catch {}
+    };
+    const pollTimer = setInterval(poll, 2500);
+    poll();
+
+    return () => {
+      es?.close();
+      clearInterval(pollTimer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [applyDecision]);
 
   function applyExplanation(data: { decision_id: number; explanation: string; explanation_source: string }) {
     const existing = idRef.current.get(data.decision_id);
