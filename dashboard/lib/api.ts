@@ -1,4 +1,7 @@
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API =
+  process.env.NEXT_PUBLIC_API_URL === "same-origin"
+    ? ""
+    : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
 const KEY = process.env.NEXT_PUBLIC_API_KEY || "change-me-demo-key";
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
