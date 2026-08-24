@@ -7,8 +7,8 @@ router = APIRouter(prefix="/api/v1/stream", tags=["stream"])
 
 
 @router.get("/events")
-def events(token: str | None = None):
-    require_api_key_soft(token)
+def events(token: str | None = None, api_key: str | None = None):
+    require_api_key_soft(token or api_key)
 
     def generator():
         import json
