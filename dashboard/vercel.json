@@ -7,10 +7,6 @@
   },
   "rewrites": [
     {
-      "source": "/api/v1/:path*",
-      "destination": "https://sentinelpay-api-production-2168.up.railway.app/api/v1/:path*"
-    },
-    {
       "source": "/(.*)",
       "destination": {
         "type": "service",
